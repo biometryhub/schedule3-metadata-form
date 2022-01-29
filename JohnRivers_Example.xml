@@ -1,0 +1,75 @@
+<registryObjects>
+	<registryObject group="Grains Research and Development Corporation - Statistics for the Australian Grains Industry 3">
+		<originatingSource type="">Grains Research and Development Corporation - Statistics for the Australian Grains Industry 3</originatingSource>
+		<collection type="dataset">
+			<name type="primary">
+				<namePart>Effective genetic control of Stagnospora nodorum blotch (SNB) 2018-19 trials</namePart>
+			</name>
+			<location>
+				<address>
+					<electronic type="email"><value>Research.office@dpird.wa.gov.au</value></electronic>
+				</address>
+			</location>
+			<description type="full">
+				<p>	Two directional blocking design, within each direction there are 3 replicates. For each row rep, it consists of 18 rows x 18 ranges (columns).
+					For each column rep, it consists of 54 rows x 6 ranges. Overall, the design has 54 rows x 18 ranges
+				</p>
+				<p>	Treatment factors: Variety, Site
+				</p>
+				<p>	Variables: HD, HGT, PLAD (Percentage lead area diseased)
+				</p>
+				<p>	Experimental design elements: RCBD, Two-way blocking
+				</p>
+				<p>	Filenames: inputDataPart1.xlsx, inputDataPart2.xlsx
+				</p>
+			</description>
+			<rights type="accessRights">
+				<p>By agreement from GRDC and dataset co-owners</p>
+			</rights>
+			<coverage>
+				<temporal>
+					<date type="dateFrom" dateFormat="W3CDTF">2018</date>
+					<date type="dateTo" dateFormat="W3CDTF">2019</date>
+				</temporal>
+				<spatial type="text">Katanning, Western Australia</spatial>
+				<spatial type="text">Manjimup, Western Australia</spatial>
+			</coverage>
+			<subject type="local">New Traits</subject>
+			<relatedInfo type="activity">
+				<title>DAW1507-002RTX</title>
+				<notes>DAW00248 - Effective genetic control of Stagonospora nodorum blotch</notes>
+				<identifier type="local">DAW1507-002RTX</identifier>
+			</relatedInfo>
+			<relatedInfo type="party">
+				<title>Research Organisation</title>
+				<notes>Department of Primary Industries and Regional Development</notes>
+				<identifier type="local">Department of Primary Industries and Regional Development</identifier>
+			</relatedInfo>
+			<relatedInfo type="party">
+				<title>SAGI Node</title>
+				<notes>Curtin University</notes>
+				<identifier type="local">Curtin University</identifier>
+			</relatedInfo>
+			<relatedInfo type="party">
+				<title>Research Contact</title>
+				<notes>Michael Francki, Senior Research Officer</notes>
+				<identifier type="local">michael.francki@agric.wa.gov.au</identifier>
+			</relatedInfo>
+			<relatedInfo type="party">
+				<title>SAGI Contact</title>
+				<notes>Suman Rakshit, Researcher</notes>
+				<identifier type="local">suman.rakshit@curtin.edu.au</identifier>
+			</relatedInfo>
+			<relatedInfo type="party">
+				<title>SAGI Contact</title>
+				<notes>Zhanglong Cao, Researcher</notes>
+				<identifier type="local">zhanglong.cao@curtin.edu.au</identifier>
+			</relatedInfo>
+			<relatedInfo type="party">
+				<title>SAGI Contact</title>
+				<notes>Katia Stefanova, Senior Research Fellow</notes>
+				<identifier type="local">katia.stefanova@curtin.edu.au</identifier>
+			</relatedInfo>
+		</collection>
+	</registryObject>
+</registryObjects>

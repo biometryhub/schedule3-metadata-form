@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<!--
+  A quick-and-dirty HTML5 form for filling in Schedule 3 metadata and
+  exporting to the RIF-CS compliant XML data form.
+
+  Code author: Russell A. Edson, Biometry Hub
+  Date last modified: 28/01/2022
+-->
+<html>
+  <head>
+    <title>Schedule 3 Metadata Form</title>
+    <meta name="description" content="Form for filling out Sch.3 metadata.">
+    <meta name="author" content="Biometry Hub">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+
+    <style>
+      div { padding-top: 8px; padding-bottom: 8px; }
+      textarea { overflow-y: scroll; height: 100px; width: 100%; }
+      #dataset_name { width: 100%; }
+      #dataset_contracttitle { width: 100%; }
+      #dataset_contractcode { width: 100%; }
+      #dataset_location { width: 100%; }
+      #dataset_subject { width: 100%; }
+      #dataset_organisation { width: 100%; }
+      #dataset_saginode { width: 100%; }
+      #dataset_treatments { width: 100%; }
+      #dataset_variables { width: 100%; }
+      #dataset_design { width: 100%; }
+      #dataset_files { width: 100%; }
+      #dataset_rights { width: 100%; }
+      #dataset_datefrom { width: 100%; }
+      #dataset_dateto { width: 100%; }
+      #dataset_datetext { width: 100%; }
+      #xml_export_filename {width: 50%; }
+    </style>
+  </head>
+
+  <body>
+    <h1>Schedule 3 Metadata Form</h1>
+
+    <!-- XML import functionality (for checking) -->
+    <div>
+      <p>
+        (Optionally) upload an existing XML file to check:
+      </p>
+
+      <input type="file" id="xml_import">
+    </div>
+
+    <!-- Name of the dataset -->
+    <div>
+      <label for="dataset_name">Dataset Name:</label>
+
+      <input type="text" id="dataset_name">
+    </div>
+
+    <!-- Project details -->
+    <div>
+      <h3>
+        GRDC project details (i.e. the project that generated this dataset)
+      </h3>
+
+      <!-- GRDC contract title -->
+      <div>
+        <label for="dataset_contracttitle">GRDC contract title:</label>
+
+        <input type="text" id="dataset_contracttitle">
+      </div>
+
+      <!-- GRDC project code -->
+      <div>
+        <label for="dataset_contractcode">GRDC contract code:</label>
+
+        <input type="text" id="dataset_contractcode">
+      </div>
+
+      <!-- Location email address -->
+      <div>
+        <label for="dataset_location">Project point-of-contact email:</label>
+
+        <input type="text" id="dataset_location">
+      </div>
+
+      <!-- Keywords -->
+      <div>
+        <label for="dataset_subject">Subject keywords:</label>
+
+        <input type="text" id="dataset_subject">
+      </div>
+
+      <!-- Parties -->
+      <div>
+        <h4>Parties involved in the project</h4>
+
+        <!-- Research organisation -->
+        <div>
+          <label for="dataset_organisation">Research organisation:</label>
+
+          <input type="text" id="dataset_organisation">
+        </div>
+
+        <!-- SAGI node -->
+        <div>
+          <label for="dataset_saginode">SAGI node:</label>
+
+          <input type="text" id="dataset_saginode">
+        </div>
+
+        <!-- Additional parties -->
+        <div>
+          <p>
+            Add details (title, name, project position and contact email)
+            for as many parties as you like:
+          </p>
+
+          <div id="dataset_party"></div>
+
+          <input type="button" id="add_party" value="Add new party">
+        </div>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div>
+      <h3>Dataset description (plain-text)</h3>
+
+      <!-- General information -->
+      <div>
+        <label for="dataset_geninfo">
+          General information about the dataset (where available):
+        </label>
+
+        <textarea id="dataset_geninfo"></textarea>
+      </div>
+
+      <!-- Treatment factors -->
+      <div>
+        <label for="dataset_treatments">
+          Treatment factors (delimited by commas):
+        </label>
+
+        <input type="text" id="dataset_treatments">
+      </div>
+
+      <!-- Observed variables -->
+      <div>
+        <label for="dataset_variables">
+          Observed variables (delimited by commas):
+        </label>
+
+        <input type="text" id="dataset_variables">
+      </div>
+
+      <div>
+        <label for="dataset_design">
+          Experimental design elements (delimited by commas):
+        </label>
+
+        <input type="text" id="dataset_design">
+      </div>
+
+      <div>
+        <label for="dataset_files">
+          Files associated with this dataset (delimited by commas):
+        </label>
+
+        <input type="text" id="dataset_files">
+      </div>
+    </div>
+
+    <!-- Rights (auto-filled, shouldn't need to change) -->
+    <div>
+      <label for="dataset_rights">
+        Dataset rights (modify if necessary):
+      </label>
+
+      <input type="text" id="dataset_rights"
+        value="By agreement from GRDC and dataset co-owners">
+    </div>
+
+    <!-- Coverage -->
+    <div>
+      <h3>Dataset coverage (temporal/spatial)</h3>
+
+      <!-- Temporal coverage -->
+      <div>
+        <p>Temporal coverage with dates in W3CDTF format (e.g. YYYY-MM-DD):</p>
+
+        <!-- Start date (From...) -->
+        <label for="dataset_datefrom">Start date: </label>
+
+        <input type="text" id="dataset_datefrom">
+
+        <!-- End date (To...) -->
+        <label for="dataset_dateto">End date: </label>
+
+        <input type="text" id="dataset_dateto">
+
+        <!-- Otherwise, descriptive date instead -->
+        <label for="dataset_datetext">
+          (If unknown or overly vague, enter a text description here instead):
+        </label>
+
+        <input type="text" id="dataset_datetext">
+      </div>
+
+      <!-- Spatial coverage -->
+      <div>
+        <p>
+          Spatial coverage (in KML lat/long coordinates or plaintext names).
+          Add as many locations as needed:
+        </p>
+
+        <div id="dataset_spatial"></div>
+
+        <input type="button" id="add_spatial" value="Add new location">
+      </div>
+    </div>
+
+    <!-- Finally, click the button to export XML. -->
+    <div>
+      <p>
+        Done. Export to RIF-CS standard XML:
+      </p>
+
+      <input type="text" id="xml_export_filename" value="output.xml">
+      <input type="button" id="xml_export" value="Export to XML...">
+    </div>
+  </body>
+
+  <script>
+    /* For user-friendliness, disable the start/end date boxes if they
+     * have provided a text description instead. If there is anything
+     * in the text description box then entered dates are ignored during
+     * the XML export.
+     */
+    var ignoreDates = false;
+    document.getElementById("dataset_datetext").addEventListener(
+      "input",
+      function (evt) {
+        const dateFrom = document.getElementById("dataset_datefrom");
+        const dateTo = document.getElementById("dataset_dateto");
+        const text = document.getElementById("dataset_datetext").value;
+
+        if (text.length > 0) {
+          ignoreDates = true;
+          dateFrom.setAttribute("disabled", true);
+          dateTo.setAttribute("disabled", true);
+        } else {
+          ignoreDates = false;
+          dateFrom.removeAttribute("disabled");
+          dateTo.removeAttribute("disabled");
+        }
+      }
+    );
+
+    /* Spatial location textboxes are auto-generated, and we keep track
+     * of the ids for the XML export.
+     */
+    const spatialLocations = [ ];
+    function addSpatialLocation() {
+      const nextId = "dataset_spatial_" + (spatialLocations.length + 1);
+      spatialLocations.push(nextId);
+
+      const nextSpatial = document.createElement("input");
+      nextSpatial.setAttribute("type", "text");
+      nextSpatial.setAttribute("id", nextId);
+      nextSpatial.setAttribute("style", "width: 100%");
+      document.getElementById("dataset_spatial").appendChild(nextSpatial);
+    }
+    addSpatialLocation();
+    document.getElementById("add_spatial").addEventListener(
+      "click",
+      addSpatialLocation
+    );
+
+    /* Parties are also auto-generated, and we keep track of the ids for
+     * the XML export.
+     */
+    const parties = [ ];
+    function addParty() {
+      const nextId = "dataset_party_" + (parties.length + 1);
+      parties.push(nextId);
+
+      const nextParty = document.createElement("span");
+      nextParty.setAttribute("id", nextId);
+
+      const partyTitle = document.createElement("input");
+      partyTitle.setAttribute("type", "text");
+      partyTitle.setAttribute("id", nextId + "_title");
+      partyTitle.setAttribute("style", "width: 100%");
+
+      const partyTitleLabel = document.createElement("label");
+      partyTitleLabel.setAttribute("for", nextId + "_title");
+      partyTitleLabel.innerText =
+        "Title (e.g.'SAGI Contact', 'Project Partner'):";
+
+      const partyName = document.createElement("input");
+      partyName.setAttribute("type", "text");
+      partyName.setAttribute("id", nextId + "_name");
+      partyName.setAttribute("style", "width: 100%");
+
+      const partyNameLabel = document.createElement("label");
+      partyNameLabel.setAttribute("for", nextId + "_name");
+      partyNameLabel.innerText = "Name:";
+
+      const partyPosition = document.createElement("input");
+      partyPosition.setAttribute("type", "text");
+      partyPosition.setAttribute("id", nextId + "_position");
+      partyPosition.setAttribute("style", "width: 100%");
+
+      const partyPositionLabel = document.createElement("label");
+      partyPositionLabel.setAttribute("for", nextId + "_position");
+      partyPositionLabel.innerText = "Position:";
+
+      const partyEmail = document.createElement("input");
+      partyEmail.setAttribute("type", "text");
+      partyEmail.setAttribute("id", nextId + "_email");
+      partyEmail.setAttribute(
+        "style",
+        "width: 100%; margin-bottom: 20px"
+      );
+
+      const partyEmailLabel = document.createElement("label");
+      partyEmailLabel.setAttribute("for", nextId + "_email");
+      partyEmailLabel.innerText = "Contact email:";
+
+      nextParty.appendChild(partyTitleLabel);
+      nextParty.appendChild(partyTitle);
+      nextParty.appendChild(partyNameLabel);
+      nextParty.appendChild(partyName);
+      nextParty.appendChild(partyPositionLabel);
+      nextParty.appendChild(partyPosition);
+      nextParty.appendChild(partyEmailLabel);
+      nextParty.appendChild(partyEmail);
+
+      document.getElementById("dataset_party").appendChild(nextParty);
+    }
+    addParty();
+    document.getElementById("add_party").addEventListener("click", addParty);
+
+    /* For both the import and export, we set/check that the
+     * registryObject group and originatingSource are "Grains
+     * Research and Development Corporation - Statistics for the
+     * Australian Grains Industry 3"
+     */
+    const grdcSagi = "Grains Research and Development Corporation" +
+      " - Statistics for the Australian Grains Industry 3";
+
+    /* Helper function: trim whitespace from a given string. */
+    function trimws(string) {
+      return string.replace(/[\n|\t| ]+/g, " ").replace(/^\s+|\s+$/gm, "");
+    }
+
+    /* An XML file can be uploaded to populate the fields in the form
+     * (and serve as a double-check that everything appears properly).
+     */
+    function xmlImport(evt) {
+      /* Load the XML file selected by the user. */
+      var file = evt.target.files[0];
+
+      var reader = new FileReader();
+      reader.onload = (function (reader) {
+        return function () {
+          xmlParse(reader.result);
+        }
+      })(reader);
+      reader.readAsText(file);
+    }
+
+    /* Parse the XML, double-checking that everything exists according
+     * to GRDC guidelines. We explicitly step through the XML
+     * structure: monitor the console for any errors, which will mean
+     * that the XML structure does not match expectations.
+     *
+     * We also populate the HTML form fields as we go.
+     */
+    function xmlParse(xmlString) {
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(xmlString, "text/xml");
+      var traverse = xml;
+
+      traverse = traverse.getElementsByTagName("registryObjects")[0];
+      traverse = traverse.getElementsByTagName("registryObject")[0];
+
+      /* registryObject group and originatingSource should be "Grains
+       * Research and Development Corporation - Statistics for the
+       * Australian Grains Industry 3".
+       */
+      const registryObjectGroup = traverse.attributes["group"].textContent;
+      traverse = traverse.getElementsByTagName("originatingSource")[0];
+      const originatingSource = traverse.childNodes[0].nodeValue;
+      traverse = traverse.parentNode;
+      if (registryObjectGroup != grdcSagi && originatingSource != grdcSagi) {
+        console.error("registryObject group or originatingSource incorrect.");
+      }
+
+      /* The collection type should be "dataset". */
+      traverse = traverse.getElementsByTagName("collection")[0];
+      if (traverse.attributes["type"].textContent != "dataset") {
+        console.error("collection type=... mismatch (should be 'dataset').");
+      }
+
+      /* Get the name of the dataset. */
+      traverse = traverse.getElementsByTagName("name")[0];
+      if (traverse.attributes["type"].textContent != "primary") {
+        console.error("name type=... mismatch (should be 'primary').");
+      }
+      traverse = traverse.getElementsByTagName("namePart")[0];
+      const datasetName = traverse.childNodes[0].textContent;
+      document.getElementById("dataset_name").value = datasetName;
+      traverse = traverse.parentNode.parentNode;
+
+      /* Get the location of the dataset. */
+      traverse = traverse.getElementsByTagName("location")[0];
+      traverse = traverse.getElementsByTagName("address")[0];
+      traverse = traverse.getElementsByTagName("electronic")[0];
+      if (traverse.attributes["type"].textContent != "email") {
+        console.error("electronic type=... mismatch (should be 'email').");
+      }
+      traverse = traverse.getElementsByTagName("value")[0];
+      const datasetLocation = traverse.childNodes[0].textContent;
+      document.getElementById("dataset_location").value = datasetLocation;
+      traverse = traverse.parentNode.parentNode.parentNode.parentNode;
+
+      /* Get and parse the description of the dataset. (Assume that
+       * everything is in the order: general description, treatments,
+       * variables, design elements, filenames.)
+       */
+      traverse = traverse.getElementsByTagName("description")[0];
+      if (traverse.attributes["type"].textContent != "full") {
+        console.error("description type=... mismatch (should be 'full').");
+      }
+      const description = traverse.getElementsByTagName("p");
+      const datasetGeninfo = trimws(description[0].childNodes[0].textContent);
+      document.getElementById("dataset_geninfo").value = datasetGeninfo;
+      const datasetTreatments =
+        trimws(description[1].childNodes[0].textContent)
+        .match(/(?<=: ).*/g)[0]
+        .replace(/,[ ]*/g, ",");
+      document.getElementById("dataset_treatments").value = datasetTreatments;
+      const datasetVariables =
+        trimws(description[2].childNodes[0].textContent)
+        .match(/(?<=: ).*/g)[0]
+        .replace(/,[ ]*/g, ",");
+      document.getElementById("dataset_variables").value = datasetVariables;
+      const datasetDesign =
+        trimws(description[3].childNodes[0].textContent)
+        .match(/(?<=: ).*/g)[0]
+        .replace(/,[ ]*/g, ",");
+      document.getElementById("dataset_design").value = datasetDesign;
+      const datasetFiles =
+        trimws(description[4].childNodes[0].textContent)
+        .match(/(?<=: ).*/g)[0]
+        .replace(/,[ ]*/g, ",");
+        document.getElementById("dataset_files").value = datasetFiles;
+      traverse = traverse.parentNode;
+
+      /* Get the access rights for the dataset. */
+      traverse = traverse.getElementsByTagName("rights")[0];
+      if (traverse.attributes["type"].textContent != "accessRights") {
+        console.error("rights type=... mismatch (should be 'accessRights').");
+      }
+      traverse = traverse.getElementsByTagName("p")[0];
+      const datasetRights = traverse.childNodes[0].textContent;
+      document.getElementById("dataset_rights").value = datasetRights;
+      traverse = traverse.parentNode.parentNode;
+
+      /* Get the temporal coverage for the dataset. Here we check to
+       * see whether dateFrom and dateTo exist: if they don't assume
+       * that a (vague) description exists instead.
+       */
+      traverse = traverse.getElementsByTagName("coverage")[0];
+      traverse = traverse.getElementsByTagName("temporal")[0];
+
+      if (traverse.getElementsByTagName("date").length > 0) {
+        const dateFrom = traverse.querySelector("date[type='dateFrom']");
+        if (dateFrom.attributes["dateFormat"].value != "W3CDTF") {
+          console.error("dateFrom format=... mismatch (should be 'W3CDTF').");
+        }
+        const datasetDateFrom = dateFrom.textContent;
+        document.getElementById("dataset_datefrom").value = datasetDateFrom;
+
+        const dateTo = traverse.querySelector("date[type='dateTo']");
+        if (dateTo.attributes["dateFormat"].value != "W3CDTF") {
+          console.error("dateTo format=... mismatch (should be 'W3CDTF').");
+        }
+        const datasetDateTo = dateTo.textContent;
+        document.getElementById("dataset_dateto").value = datasetDateTo;
+      } else {
+        /* Assume a description instead. */
+        const datasetDateText = traverse.childNodes[0].textContent;
+        document.getElementById("dataset_datetext").value = datasetDateText;
+        ignoreDates = true;
+        document.getElementById("dataset_datefrom")
+          .setAttribute("disabled", true);
+        document.getElementById("dataset_dateto")
+          .setAttribute("disabled", true);
+      }
+      traverse = traverse.parentNode;
+
+      /* Get the spatial coverage for the dataset (generate as many
+       * rows as necessary.)
+       */
+      const spatial = traverse.getElementsByTagName("spatial");
+      for (i = 0; i < spatial.length; i++) {
+        if (i >= spatialLocations.length) {
+          addSpatialLocation();
+        }
+        var datasetSpatial = spatial[i].textContent;
+        document.getElementById(spatialLocations[i]).value = datasetSpatial;
+      }
+      traverse = traverse.parentNode;
+
+      /* Get the subject keywords for the dataset. */
+      //TODO: Are these comma-separated? At the moment we just treat it
+      //      as a text string, but this might need to be changed later.
+      traverse = traverse.getElementsByTagName("subject")[0];
+      if (traverse.attributes["type"].textContent != "local") {
+        console.error("subject type=... mismatch (should be 'local').");
+      }
+      const datasetSubject = traverse.childNodes[0].textContent;
+      document.getElementById("dataset_subject").value = datasetSubject;
+      traverse = traverse.parentNode;
+
+      /* Get the contract title and contract code (in the 'activity'
+       * relatedInfo tag), and confirm the XML structure.
+       */
+      traverse = traverse.querySelector("relatedInfo[type='activity']");
+      traverse = traverse.getElementsByTagName("title")[0];
+      const datasetContractCode = traverse.childNodes[0].textContent;
+      document.getElementById("dataset_contractcode").value =
+        datasetContractCode;
+      traverse = traverse.parentNode;
+      traverse = traverse.getElementsByTagName("notes")[0];
+      const datasetContractTitle = traverse.childNodes[0].textContent;
+      document.getElementById("dataset_contracttitle").value =
+        datasetContractTitle;
+      traverse = traverse.parentNode;
+      traverse = traverse.getElementsByTagName("identifier")[0];
+      if (traverse.attributes["type"].textContent != "local") {
+        console.error("identifier type=... mismatch (should be 'local').");
+      }
+      if (traverse.childNodes[0].textContent != datasetContractCode) {
+        console.error("identifier != title in relatedInfo['activity'].");
+      }
+      traverse = traverse.parentNode.parentNode;
+
+      /* Get the listed parties (including the Research Organisation
+       * and SAGI Node, which we handle specifically).
+       * Here we assume that the research organisation has
+       * 'Research Organisation' as its title, and the SAGI node has
+       * 'SAGI Node' in its title, both case-sensitive.
+       */
+      const partyElements =
+        traverse.querySelectorAll("relatedInfo[type='party']");
+
+      /* Research Organisation */
+      var i = 0;
+      while (i < partyElements.length &&
+        partyElements[i].getElementsByTagName("title")[0].textContent !=
+        "Research Organisation") {
+          i++;
+      }
+      if (i == partyElements.length) {
+        console.error("No 'Research Organisation' party found.");
+      } else {
+        traverse = partyElements[i];
+        const organisation =
+          traverse.getElementsByTagName("notes")[0].textContent;
+        document.getElementById("dataset_organisation").value = organisation;
+        traverse = traverse.getElementsByTagName("identifier")[0];
+        if (traverse.attributes["type"].textContent != "local") {
+          console.error("identifier type=... mismatch (should be 'local').");
+        }
+        if (traverse.childNodes[0].textContent != organisation) {
+          console.error("identifier != notes in Research Organisation party.");
+        }
+        traverse = traverse.parentNode.parentNode;
+      }
+
+      /* SAGI Node */
+      var j = 0;
+      while (j < partyElements.length &&
+        partyElements[j].getElementsByTagName("title")[0].textContent !=
+        "SAGI Node") {
+          j++;
+      }
+      if (j == partyElements.length) {
+        console.error("No 'SAGI Node' party found.");
+      } else {
+        traverse = partyElements[j];
+        const sagiNode = traverse.getElementsByTagName("notes")[0].textContent;
+        document.getElementById("dataset_saginode").value = sagiNode;
+        traverse = traverse.getElementsByTagName("identifier")[0];
+        if (traverse.attributes["type"].textContent != "local") {
+          console.error("identifier type=... mismatch (should be 'local').");
+        }
+        if (traverse.childNodes[0].textContent != sagiNode) {
+          console.error("identifier != notes in SAGI Node party.");
+        }
+        traverse = traverse.parentNode.parentNode;
+      }
+
+      /* Other parties */
+      for (k = 0, count = 0; k < partyElements.length; k++) {
+        if (k != i && k != j) {
+          if (count >= parties.length) {
+            addParty();
+          }
+          traverse = partyElements[k];
+          traverse = traverse.getElementsByTagName("title")[0];
+          var partyTitle = traverse.childNodes[0].textContent;
+          document.getElementById(parties[count] + "_title").value = partyTitle;
+          traverse = traverse.parentNode;
+          traverse = traverse.getElementsByTagName("notes")[0];
+          var partyNotes = trimws(traverse.childNodes[0].textContent)
+            .split(",");
+          var partyName = trimws(partyNotes[0]);
+          document.getElementById(parties[count] + "_name").value = partyName;
+          var partyPosition = trimws(partyNotes[1]);
+          document.getElementById(parties[count] + "_position").value =
+            partyPosition;
+          traverse = traverse.parentNode;
+          traverse = traverse.getElementsByTagName("identifier")[0];
+          if (traverse.attributes["type"].textContent != "local") {
+            console.error("identifier type=... mismatch (should be 'local').");
+          }
+          var partyEmail = traverse.childNodes[0].textContent;
+          document.getElementById(parties[count] + "_email").value =
+            partyEmail;
+          traverse = traverse.parentNode;
+
+          count++;
+        }
+      }
+
+      /* By default, the export filename is the input filename (so that
+       * changes can be overwritten, which is presumably the typical
+       * use-case).
+       */
+      var cleaned = datasetName.match(/\w+/g);
+      if (cleaned == null) {
+        cleaned = [ "output" ];
+      }
+      const filename = cleaned.join("_") + ".xml";
+
+      document.getElementById("xml_export_filename").value = filename;
+    }
+    document.getElementById("xml_import").addEventListener(
+      "change",
+      xmlImport,
+      false
+    );
+
+    /* Finally, the fields are all exported to RIF-CS compliant XML. */
+    function xmlExport(evt) {
+      const filename = document.getElementById("xml_export_filename").value;
+
+      // TODO: Get the text from all of the fields in turn
+      var text = "testing";
+
+      // TODO: Compile the proper XML output (refer to spec!)
+
+
+
+
+
+      var downloadElement = document.createElement("a");
+      downloadElement.setAttribute(
+        "href",
+        "data:text/plain;charset=utf-8," + encodeURIComponent(text)
+      );
+      downloadElement.setAttribute("download", filename);
+      downloadElement.click();
+    }
+    document.getElementById("xml_export").addEventListener("click", xmlExport);
+
+    /* For convenience, the XML filename for the export defaults to
+     * whatever is entered for the dataset name (sans any
+     * special characters).
+     */
+    document.getElementById("dataset_name").addEventListener(
+      "input",
+      function (evt) {
+        const datasetName = document.getElementById("dataset_name").value;
+
+        var cleaned = datasetName.match(/\w+/g);
+        if (cleaned == null) {
+          cleaned = [ "output" ];
+        }
+        const filename = cleaned.join("_") + ".xml";
+
+        document.getElementById("xml_export_filename").value = filename;
+      }
+    );
+  </script>
+</html>
