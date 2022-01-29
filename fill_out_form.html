@@ -95,7 +95,9 @@
 
         <!-- Research organisation -->
         <div>
-          <label for="dataset_organisation">Research organisation:</label>
+          <label for="dataset_organisation">
+            (Primary) Research organisation:
+          </label>
 
           <input type="text" id="dataset_organisation">
         </div>
@@ -474,6 +476,9 @@
       traverse = traverse.getElementsByTagName("coverage")[0];
       traverse = traverse.getElementsByTagName("temporal")[0];
 
+//TODO: double-check that this still works. Might be easier to just
+// compare for missing type="text" attribute?
+
       if (traverse.getElementsByTagName("date").length > 0) {
         const dateFrom = traverse.querySelector("date[type='dateFrom']");
         if (dateFrom.attributes["dateFormat"].value != "W3CDTF") {
@@ -658,19 +663,282 @@
     function xmlExport(evt) {
       const filename = document.getElementById("xml_export_filename").value;
 
-      // TODO: Get the text from all of the fields in turn
-      var text = "testing";
+      /* Create the XML string and populate the fields as we go,
+       * extracting the relevant bits from the HTML form fields.
+       */
+      var xmlString = "<registryObjects></registryObjects>";
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(xmlString, "text/xml");
+      var traverse = xml.getElementsByTagName("registryObjects")[0];
 
-      // TODO: Compile the proper XML output (refer to spec!)
+      /* The registryObject has group="Grains Research and Development
+       * Corporation - Statistics for the Australian Grains Industry 3".
+       */
+      var registryObject = xml.createElement("registryObject");
+      registryObject.setAttribute("group", grdcSagi);
+      traverse.appendChild(registryObject);
+      traverse = registryObject;
+
+      /* The originatingSource has type="" and text content
+       * "Grains Research and Development Corporation - Statistics for
+       * the Australian Grains Industry 3".
+       */
+      var originatingSource = xml.createElement("originatingSource");
+      originatingSource.setAttribute("type", "");
+      originatingSource.textContent = grdcSagi;
+      traverse.appendChild(originatingSource);
+
+      /* The collection has type="dataset" and contains all of the
+       * dataset metadata.
+       */
+      var collection = xml.createElement("collection");
+      collection.setAttribute("type", "dataset");
+      traverse.appendChild(collection);
+      traverse = collection;
+
+      /* The name has type="primary" and contains a sub-element namePart
+       * that holds the text name for the dataset.
+       */
+      const datasetName = trimws(document.getElementById("dataset_name").value);
+      var name_ = xml.createElement("name");
+      name_.setAttribute("type", "primary");
+      traverse.appendChild(name_);
+      traverse = name_;
+      var namePart = xml.createElement("namePart");
+      namePart.textContent = datasetName;
+      traverse.appendChild(namePart);
+      traverse = traverse.parentNode;
+
+      /* The location holds an address tag, which in turn holds an
+       * electronic tag with type="email", which in turn holds a value
+       * tag with the text of the point of contact email.
+       */
+      const datasetLocation =
+        trimws(document.getElementById("dataset_location").value);
+      var location_ = xml.createElement("location");
+      traverse.appendChild(location_);
+      traverse = location_;
+      var address_ = xml.createElement("address");
+      traverse.appendChild(address_);
+      traverse = address_;
+      var electronic = xml.createElement("electronic");
+      electronic.setAttribute("type", "email");
+      traverse.appendChild(electronic);
+      traverse = electronic;
+      var value_ = xml.createElement("value");
+      value_.textContent = datasetLocation;
+      traverse.appendChild(value_);
+      traverse = traverse.parentNode.parentNode.parentNode;
+
+      /* The description has type="full" and contains separate p
+       * paragraphs for the general info, treatment factors,
+       * observed variables, experimental design elements and filenames
+       * in that order.
+       */
+      const datasetGenInfo =
+        trimws(document.getElementById("dataset_geninfo").value);
+      const datasetTreatments =
+        trimws(document.getElementById("dataset_treatments").value);
+      const datasetVariables =
+        trimws(document.getElementById("dataset_variables").value);
+      const datasetDesign =
+        trimws(document.getElementById("dataset_design").value);
+      const datasetFiles =
+        trimws(document.getElementById("dataset_files").value);
+      var description = xml.createElement("description");
+      description.setAttribute("type", "full");
+      traverse.appendChild(description);
+      traverse = description;
+      var p_ = xml.createElement("p");
+      p_.textContent = datasetGenInfo;
+      traverse.appendChild(p_);
+      var p_ = xml.createElement("p");
+      p_.textContent = "Treatment factors: " +
+        datasetTreatments.replaceAll(",", ", ");
+      traverse.appendChild(p_);
+      var p_ = xml.createElement("p");
+      p_.textContent = "Variables: " +
+        datasetVariables.replaceAll(",", ", ");
+      traverse.appendChild(p_);
+      var p_ = xml.createElement("p");
+      p_.textContent = "Experimental design elements: " +
+        datasetDesign.replaceAll(",", ", ");
+      traverse.appendChild(p_);
+      var p_ = xml.createElement("p");
+      p_.textContent = "Filenames: " + datasetFiles.replaceAll(",", ", ");
+      traverse.appendChild(p_);
+      traverse = traverse.parentNode;
+
+      /* The rights tag has type="accessRights" and contains a p tag
+       * that holds the access rights text.
+       */
+      const datasetRights =
+        trimws(document.getElementById("dataset_rights").value);
+      var rights = xml.createElement("rights");
+      rights.setAttribute("type", "accessRights");
+      traverse.appendChild(rights);
+      traverse = rights;
+      var p_ = xml.createElement("p");
+      p_.textContent = datasetRights;
+      traverse.appendChild(p_);
+      traverse = traverse.parentNode;
+
+      /* The coverage tag contains both temporal and spatial tags. */
+      var coverage = xml.createElement("coverage");
+      traverse.appendChild(coverage);
+      traverse = coverage;
+
+      /* The temporal tag will either:
+       *   1/ have type="text" and contain the textual description of
+       *      the tempoarl coverage, if only a vague description was
+       *      given in the HTML form, or:
+       *   2/ have no type or other attributes, but contain date tags
+       *      with type="dateFrom" and "dateTo", and
+       *      dateFormat="W3CDTF", which contain the dates as text.
+       */
+      const datasetDateFrom =
+        trimws(document.getElementById("dataset_datefrom").value);
+      const datasetDateTo =
+        trimws(document.getElementById("dataset_dateto").value);
+      const datasetDateText =
+        trimws(document.getElementById("dataset_datetext").value);
+      var temporal = xml.createElement("temporal");
+      if (ignoreDates) {
+        temporal.setAttribute("type", "text");
+        temporal.textContent = datasetDateText;
+      } else {
+        var dateFrom = xml.createElement("date");
+        dateFrom.setAttribute("type", "dateFrom");
+        dateFrom.setAttribute("dateFormat", "W3CDTF");
+        dateFrom.textContent = datasetDateFrom;
+        temporal.appendChild(dateFrom);
+        var dateTo = xml.createElement("date");
+        dateTo.setAttribute("type", "dateTo");
+        dateTo.setAttribute("dateFormat", "W3CDTF");
+        dateTo.textContent = datasetDateTo;
+        temporal.appendChild(dateTo);
+      }
+      traverse.appendChild(temporal);
+
+      /* There will be multiple spatial tags for each spatial location
+       * specified in the form, and they each have type="text" and
+       * contain the text for the locations (which may or may not be
+       * GPS coordinates).
+       */
+      for (i = 0; i < spatialLocations.length; i++) {
+        var spatialLocation =
+          trimws(document.getElementById(spatialLocations[i]).value);
+        if (spatialLocation.length > 0) {
+          var spatial = xml.createElement("spatial");
+          spatial.setAttribute("type", "text");
+          spatial.textContent = spatialLocation;
+          traverse.appendChild(spatial);
+        }
+      }
+      traverse = traverse.parentNode;
+
+      /* The subject has type="local" and contains the subject keywords
+       * for the project.
+       */
+      const datasetSubject =
+        trimws(document.getElementById("dataset_subject").value);
+      var subject = xml.createElement("subject");
+      subject.setAttribute("type", "local");
+      subject.textContent = datasetSubject;
+      traverse.appendChild(subject);
+
+      /* The first relatedInfo tag has type="activity" and contains
+       * a title tag which has the text for the GRDC contract code,
+       * a notes tag that has the GRDC contract title text, and an
+       * identifier tag with type="local" that also contains the
+       * GRDC contract code.
+       */
+      const datasetContractTitle =
+        trimws(document.getElementById("dataset_contracttitle").value);
+      const datasetContractCode =
+        trimws(document.getElementById("dataset_contractcode").value);
+      var relatedInfo = xml.createElement("relatedInfo");
+      relatedInfo.setAttribute("type", "activity");
+      traverse.appendChild(relatedInfo);
+      traverse = relatedInfo;
+      var title_ = xml.createElement("title");
+      title_.textContent = datasetContractCode;
+      traverse.appendChild(title_);
+      var notes_ = xml.createElement("notes");
+      notes_.textContent = datasetContractTitle;
+      traverse.appendChild(notes_);
+      var identifier_ = xml.createElement("identifier");
+      identifier_.setAttribute("type", "local");
+      identifier_.textContent = datasetContractCode;
+      traverse.appendChild(identifier_);
+      traverse = traverse.parentNode;
+
+      /* By convention, the second relatedInfo tag has type="party"
+       * with a title tag containing "Research Organisation", a notes
+       * tag containing the research organisation, and an identifier
+       * tag with type="local" that also contains the research
+       * organisation text (for this primary organisation).
+       */
+      const datasetOrganisation =
+        trimws(document.getElementById("dataset_organisation").value);
+      var relatedInfo = xml.createElement("relatedInfo");
+      relatedInfo.setAttribute("type", "party");
+      traverse.appendChild(relatedInfo);
+      traverse = relatedInfo;
+      var title_ = xml.createElement("title");
+      title_.textContent = "Research Organisation";
+      traverse.appendChild(title_);
+      var notes_ = xml.createElement("notes");
+      notes_.textContent = datasetOrganisation;
+      traverse.appendChild(notes_);
+      var identifier_ = xml.createElement("identifier");
+      identifier_.setAttribute("type", "local");
+      identifier_.textContent = datasetOrganisation;
+      traverse.appendChild(identifier_);
+      traverse = traverse.parentNode;
+
+      /* By convention, the third relatedInfo tag has type="party",
+       * with a title tag containing "SAGI Node", a notes tag containing
+       * containing the SAGI node that worked on the project, and an
+       * identifier tag with type="local" that also contains the
+       * SAGI node text.
+       */
+      const datasetSagiNode =
+        trimws(document.getElementById("dataset_saginode").value);
+      var relatedInfo = xml.createElement("relatedInfo");
+      relatedInfo.setAttribute("type", "party");
+      traverse.appendChild(relatedInfo);
+      traverse = relatedInfo;
+      var title_ = xml.createElement("title");
+      title_.textContent = "SAGI Node";
+      traverse.appendChild(title_);
+      var notes_ = xml.createElement("notes");
+      notes_.textContent = datasetSagiNode;
+      traverse.appendChild(notes_);
+      var identifier_ = xml.createElement("identifier");
+      identifier_.setAttribute("type", "local");
+      identifier_.textContent = datasetSagiNode;
+      traverse.appendChild(identifier_);
+      traverse = traverse.parentNode;
 
 
+//TODO will need to fix up the parties, so don't worry about doing
+// this just yet. Come back after it's been fixed in the form and import
+// Also, ignore parties that have no fields filled in.
+
+
+      /* Serialize the XML to a string for the file download. */
+      const serializer = new XMLSerializer();
+      xmlString = serializer.serializeToString(xml);
+
+//TODO do some pretty formatting of the XML string
 
 
 
       var downloadElement = document.createElement("a");
       downloadElement.setAttribute(
         "href",
-        "data:text/plain;charset=utf-8," + encodeURIComponent(text)
+        "data:text/plain;charset=utf-8," + encodeURIComponent(xmlString)
       );
       downloadElement.setAttribute("download", filename);
       downloadElement.click();
