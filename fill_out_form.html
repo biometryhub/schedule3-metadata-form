@@ -4,7 +4,7 @@
   exporting to the RIF-CS compliant XML data form.
 
   Code author: Russell A. Edson, Biometry Hub
-  Date last modified: 28/01/2022
+  Date last modified: 31/01/2022
 -->
 <html>
   <head>
@@ -112,8 +112,8 @@
         <!-- Additional parties -->
         <div>
           <p>
-            Add details (title, name, project position and contact email)
-            for as many parties as you like:
+            Add details for as many organisational or individual parties
+            as you like:
           </p>
 
           <div id="dataset_party"></div>
@@ -278,7 +278,9 @@
     );
 
     /* Parties are also auto-generated, and we keep track of the ids for
-     * the XML export.
+     * the XML export. Parties can be either organisational or
+     * individual, and the user can freely swap between both.
+     * (By default, a new Organisational-type party is created.)
      */
     const parties = [ ];
     function addParty() {
@@ -288,59 +290,168 @@
       const nextParty = document.createElement("span");
       nextParty.setAttribute("id", nextId);
 
-      const partyTitle = document.createElement("input");
-      partyTitle.setAttribute("type", "text");
-      partyTitle.setAttribute("id", nextId + "_title");
-      partyTitle.setAttribute("style", "width: 100%");
+      const partyType = document.createElement("div");
 
-      const partyTitleLabel = document.createElement("label");
-      partyTitleLabel.setAttribute("for", nextId + "_title");
-      partyTitleLabel.innerText =
-        "Title (e.g.'SAGI Contact', 'Project Partner'):";
+      const partyType1 = document.createElement("input");
+      partyType1.setAttribute("type", "radio");
+      partyType1.setAttribute("id", nextId + "_type_organisation");
+      partyType1.setAttribute("name", nextId + "_type");
+      partyType1.setAttribute("value", "Organisation");
+      partyType1.checked = true;
 
-      const partyName = document.createElement("input");
-      partyName.setAttribute("type", "text");
-      partyName.setAttribute("id", nextId + "_name");
-      partyName.setAttribute("style", "width: 100%");
+      const partyType1Label = document.createElement("label");
+      partyType1Label.setAttribute("for", nextId + "_type_organisation");
+      partyType1Label.innerText = "Organisation";
 
-      const partyNameLabel = document.createElement("label");
-      partyNameLabel.setAttribute("for", nextId + "_name");
-      partyNameLabel.innerText = "Name:";
+      const partyType2 = document.createElement("input");
+      partyType2.setAttribute("type", "radio");
+      partyType2.setAttribute("id", nextId + "_type_individual");
+      partyType2.setAttribute("name", nextId + "_type");
+      partyType2.setAttribute("value", "Individual");
 
-      const partyPosition = document.createElement("input");
-      partyPosition.setAttribute("type", "text");
-      partyPosition.setAttribute("id", nextId + "_position");
-      partyPosition.setAttribute("style", "width: 100%");
+      const partyType2Label = document.createElement("label");
+      partyType2Label.setAttribute("for", nextId + "_type_individual");
+      partyType2Label.innerText = "Individual";
 
-      const partyPositionLabel = document.createElement("label");
-      partyPositionLabel.setAttribute("for", nextId + "_position");
-      partyPositionLabel.innerText = "Position:";
+      partyType.appendChild(partyType1);
+      partyType.appendChild(partyType1Label);
+      partyType.appendChild(partyType2);
+      partyType.appendChild(partyType2Label);
 
-      const partyEmail = document.createElement("input");
-      partyEmail.setAttribute("type", "text");
-      partyEmail.setAttribute("id", nextId + "_email");
-      partyEmail.setAttribute(
+      const partyOrgTitle = document.createElement("input");
+      partyOrgTitle.setAttribute("type", "text");
+      partyOrgTitle.setAttribute("id", nextId + "_org_title");
+      partyOrgTitle.setAttribute("style", "width: 100%");
+
+      const partyOrgTitleLabel = document.createElement("label");
+      partyOrgTitleLabel.setAttribute("for", nextId + "_org_title");
+      partyOrgTitleLabel.setAttribute("id", nextId + "_org_title_label");
+      partyOrgTitleLabel.innerText =
+        "Title (e.g. 'Research Organisation', 'Project Partner'):";
+
+      const partyOrgName = document.createElement("input");
+      partyOrgName.setAttribute("type", "text");
+      partyOrgName.setAttribute("id", nextId + "_org_name");
+      partyOrgName.setAttribute("style", "width: 100%; margin-bottom: 20px");
+
+      const partyOrgNameLabel = document.createElement("label");
+      partyOrgNameLabel.setAttribute("for", nextId + "_org_name");
+      partyOrgNameLabel.setAttribute("id", nextId + "_org_name_label");
+      partyOrgNameLabel.innerText = "Name:";
+
+      const partyIndTitle = document.createElement("input");
+      partyIndTitle.setAttribute("type", "text");
+      partyIndTitle.setAttribute("id", nextId + "_ind_title");
+      partyIndTitle.setAttribute("style", "width: 100%; display: none");
+
+      const partyIndTitleLabel = document.createElement("label");
+      partyIndTitleLabel.setAttribute("for", nextId + "_ind_title");
+      partyIndTitleLabel.setAttribute("id", nextId + "_ind_title_label");
+      partyIndTitleLabel.setAttribute("style", "display: none");
+      partyIndTitleLabel.innerText =
+        "Title (e.g.'Research Contact', 'SAGI Contact'):";
+
+      const partyIndName = document.createElement("input");
+      partyIndName.setAttribute("type", "text");
+      partyIndName.setAttribute("id", nextId + "_ind_name");
+      partyIndName.setAttribute("style", "width: 100%; display: none");
+
+      const partyIndNameLabel = document.createElement("label");
+      partyIndNameLabel.setAttribute("for", nextId + "_ind_name");
+      partyIndNameLabel.setAttribute("id", nextId + "_ind_name_label");
+      partyIndNameLabel.setAttribute("style", "display: none");
+      partyIndNameLabel.innerText = "Name:";
+
+      const partyIndPosition = document.createElement("input");
+      partyIndPosition.setAttribute("type", "text");
+      partyIndPosition.setAttribute("id", nextId + "_ind_position");
+      partyIndPosition.setAttribute("style", "width: 100%; display: none");
+
+      const partyIndPositionLabel = document.createElement("label");
+      partyIndPositionLabel.setAttribute("for", nextId + "_ind_position");
+      partyIndPositionLabel.setAttribute("id", nextId + "_ind_position_label");
+      partyIndPositionLabel.setAttribute("style", "display: none");
+      partyIndPositionLabel.innerText = "Position:";
+
+      const partyIndEmail = document.createElement("input");
+      partyIndEmail.setAttribute("type", "text");
+      partyIndEmail.setAttribute("id", nextId + "_ind_email");
+      partyIndEmail.setAttribute(
         "style",
-        "width: 100%; margin-bottom: 20px"
+        "width: 100%; margin-bottom: 20px; display: none"
       );
 
-      const partyEmailLabel = document.createElement("label");
-      partyEmailLabel.setAttribute("for", nextId + "_email");
-      partyEmailLabel.innerText = "Contact email:";
+      const partyIndEmailLabel = document.createElement("label");
+      partyIndEmailLabel.setAttribute("for", nextId + "_ind_email");
+      partyIndEmailLabel.setAttribute("id", nextId + "_ind_email_label");
+      partyIndEmailLabel.setAttribute("style", "display: none");
+      partyIndEmailLabel.innerText = "Contact email:";
 
-      nextParty.appendChild(partyTitleLabel);
-      nextParty.appendChild(partyTitle);
-      nextParty.appendChild(partyNameLabel);
-      nextParty.appendChild(partyName);
-      nextParty.appendChild(partyPositionLabel);
-      nextParty.appendChild(partyPosition);
-      nextParty.appendChild(partyEmailLabel);
-      nextParty.appendChild(partyEmail);
+      nextParty.appendChild(partyType);
+      nextParty.appendChild(partyOrgTitleLabel)
+      nextParty.appendChild(partyOrgTitle);
+      nextParty.appendChild(partyOrgNameLabel);
+      nextParty.appendChild(partyOrgName);
+      nextParty.appendChild(partyIndTitleLabel);
+      nextParty.appendChild(partyIndTitle);
+      nextParty.appendChild(partyIndNameLabel);
+      nextParty.appendChild(partyIndName);
+      nextParty.appendChild(partyIndPositionLabel);
+      nextParty.appendChild(partyIndPosition);
+      nextParty.appendChild(partyIndEmailLabel);
+      nextParty.appendChild(partyIndEmail);
 
+      /* Add an event listener for the radio buttons that lets us toggle
+       * between Organisation and Individual-type parties.
+       */
+      partyType1.addEventListener(
+        "change",
+        function () { toggleParty(nextId, true) }
+      );
+      partyType2.addEventListener(
+        "change",
+        function () { toggleParty(nextId, false) }
+      );
       document.getElementById("dataset_party").appendChild(nextParty);
     }
+
     addParty();
     document.getElementById("add_party").addEventListener("click", addParty);
+
+    /* Toggle the party as an organisation or individual. */
+    function toggleParty(partyId, organisation) {
+      var orgDisplay = "";
+      var indDisplay = "none";
+      if (!organisation) {
+        orgDisplay = "none";
+        indDisplay = "";
+      }
+
+      document.getElementById(partyId + "_org_title")
+        .style.display = orgDisplay;
+      document.getElementById(partyId + "_org_title_label")
+        .style.display = orgDisplay;
+      document.getElementById(partyId + "_org_name")
+        .style.display = orgDisplay;
+      document.getElementById(partyId + "_org_name_label")
+        .style.display = orgDisplay;
+      document.getElementById(partyId + "_ind_title")
+        .style.display = indDisplay;
+      document.getElementById(partyId + "_ind_title_label")
+        .style.display = indDisplay;
+      document.getElementById(partyId + "_ind_name")
+        .style.display = indDisplay;
+      document.getElementById(partyId + "_ind_name_label")
+        .style.display = indDisplay;
+      document.getElementById(partyId + "_ind_position")
+        .style.display = indDisplay;
+      document.getElementById(partyId + "_ind_position_label")
+        .style.display = indDisplay;
+      document.getElementById(partyId + "_ind_email")
+        .style.display = indDisplay;
+      document.getElementById(partyId + "_ind_email_label")
+        .style.display = indDisplay;
+    }
 
     /* For both the import and export, we set/check that the
      * registryObject group and originatingSource are "Grains
