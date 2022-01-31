@@ -61,6 +61,11 @@
 				<identifier type="local">suman.rakshit@curtin.edu.au</identifier>
 			</relatedInfo>
 			<relatedInfo type="party">
+				<title>SAGI Node</title>
+				<notes>Biometry Hub</notes>
+				<identifier type="local">Biometry Hub</identifier>
+			</relatedInfo>
+			<relatedInfo type="party">
 				<title>SAGI Contact</title>
 				<notes>Zhanglong Cao, Researcher</notes>
 				<identifier type="local">zhanglong.cao@curtin.edu.au</identifier>

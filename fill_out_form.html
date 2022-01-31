@@ -475,9 +475,7 @@
 
       var reader = new FileReader();
       reader.onload = (function (reader) {
-        return function () {
-          xmlParse(reader.result);
-        }
+        return function () { xmlParse(reader.result); }
       })(reader);
       reader.readAsText(file);
     }
@@ -587,9 +585,6 @@
       traverse = traverse.getElementsByTagName("coverage")[0];
       traverse = traverse.getElementsByTagName("temporal")[0];
 
-//TODO: double-check that this still works. Might be easier to just
-// compare for missing type="text" attribute?
-
       if (traverse.getElementsByTagName("date").length > 0) {
         const dateFrom = traverse.querySelector("date[type='dateFrom']");
         if (dateFrom.attributes["dateFormat"].value != "W3CDTF") {
@@ -663,11 +658,15 @@
       }
       traverse = traverse.parentNode.parentNode;
 
-      /* Get the listed parties (including the Research Organisation
-       * and SAGI Node, which we handle specifically).
-       * Here we assume that the research organisation has
-       * 'Research Organisation' as its title, and the SAGI node has
-       * 'SAGI Node' in its title, both case-sensitive.
+      /* Get the listed parties (including the primary Research
+       * Organisation and SAGI Node, which we handle specifically).
+       * Here we assume that the priamry research organisation is the
+       * first listed party that explicitly has 'Research Organisation'
+       * as its title, and the SAGI node is the first party that has
+       * 'SAGI Node' in its title, both case-sensitive. The other
+       * parties are toggled as organisations or individuals depending
+       * on how the XML looks: if the identifier text matches the notes
+       * text, we assume an organisation, otherwise assume a party.
        */
       const partyElements =
         traverse.querySelectorAll("relatedInfo[type='party']");
@@ -719,34 +718,60 @@
         traverse = traverse.parentNode.parentNode;
       }
 
-      /* Other parties */
+      /* Other parties are populated as either organisations or
+       * individuals depending on whether their identifier text matches
+       * with the notes text.
+       */
       for (k = 0, count = 0; k < partyElements.length; k++) {
         if (k != i && k != j) {
           if (count >= parties.length) {
             addParty();
           }
           traverse = partyElements[k];
+
           traverse = traverse.getElementsByTagName("title")[0];
-          var partyTitle = traverse.childNodes[0].textContent;
-          document.getElementById(parties[count] + "_title").value = partyTitle;
+          var partyTitle = trimws(traverse.childNodes[0].textContent);
           traverse = traverse.parentNode;
           traverse = traverse.getElementsByTagName("notes")[0];
-          var partyNotes = trimws(traverse.childNodes[0].textContent)
-            .split(",");
-          var partyName = trimws(partyNotes[0]);
-          document.getElementById(parties[count] + "_name").value = partyName;
-          var partyPosition = trimws(partyNotes[1]);
-          document.getElementById(parties[count] + "_position").value =
-            partyPosition;
+          var partyNotes = trimws(traverse.childNodes[0].textContent);
           traverse = traverse.parentNode;
           traverse = traverse.getElementsByTagName("identifier")[0];
           if (traverse.attributes["type"].textContent != "local") {
             console.error("identifier type=... mismatch (should be 'local').");
           }
-          var partyEmail = traverse.childNodes[0].textContent;
-          document.getElementById(parties[count] + "_email").value =
-            partyEmail;
+          var partyIdentifier = trimws(traverse.childNodes[0].textContent);
           traverse = traverse.parentNode;
+
+          if (partyNotes == partyIdentifier) {
+            /* Assume an organisation in this case. */
+            document.getElementById(parties[count] + "_type_organisation")
+              .checked = true;
+            toggleParty(parties[count], true);
+
+            document.getElementById(parties[count] + "_org_title").value =
+              partyTitle;
+            var partyName = trimws(partyNotes);
+            document.getElementById(parties[count] + "_org_name").value =
+              partyName;
+          } else {
+            /* Assume an individual in this case. */
+            document.getElementById(parties[count] + "_type_individual")
+              .checked = true;
+            toggleParty(parties[count], false);
+
+            document.getElementById(parties[count] + "_ind_title").value =
+              partyTitle;
+            partyNotes = partyNotes.split(",");
+            var partyName = trimws(partyNotes[0]);
+            document.getElementById(parties[count] + "_ind_name").value =
+              partyName;
+            var partyPosition = trimws(partyNotes[1]);
+            document.getElementById(parties[count] + "_ind_position").value =
+              partyPosition;
+            var partyEmail = trimws(partyIdentifier);
+            document.getElementById(parties[count] + "_ind_email").value =
+              partyEmail;
+          }
 
           count++;
         }
