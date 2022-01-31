@@ -1057,24 +1057,117 @@
       traverse.appendChild(identifier_);
       traverse = traverse.parentNode;
 
+      /* The rest of the related Info tags are the parties, in the
+       * same order as they appear in the HTML form. Each party will
+       * have a title tag, a notes tag, and an identifier tag with
+       * type="local". For organisation parties, the notes tag text
+       * matches exactly with the identifier text. For individual
+       * parties, the notes tag text is the concatenation of the party
+       * name and their position (comma-separated), and the identifier
+       * text is the given contact email. (Parties with no active text
+       * fields are ignored.)
+       */
+      for (i = 0; i < parties.length; i++) {
+        var organisation = document
+          .getElementById(parties[i] + "_type_organisation").checked;
+        if (organisation) {
+          var datasetOrgTitle = trimws(
+            document.getElementById(parties[i] + "_org_title").value
+          );
+          var datasetOrgName = trimws(
+            document.getElementById(parties[i] + "_org_name").value
+          );
+          if (datasetOrgTitle.length > 0 || datasetOrgName.length > 0) {
+            var relatedInfo = xml.createElement("relatedInfo");
+            relatedInfo.setAttribute("type", "party");
+            traverse.appendChild(relatedInfo);
+            traverse = relatedInfo;
+            var title_ = xml.createElement("title");
+            title_.textContent = datasetOrgTitle;
+            traverse.appendChild(title_);
+            var notes_ = xml.createElement("notes");
+            notes_.textContent = datasetOrgName;
+            traverse.appendChild(notes_);
+            var identifier_ = xml.createElement("identifier");
+            identifier_.setAttribute("type", "local");
+            identifier_.textContent = datasetOrgName;
+            traverse.appendChild(identifier_);
+            traverse = traverse.parentNode;
+          }
+        } else {
+          var datasetIndTitle = trimws(
+            document.getElementById(parties[i] + "_ind_title").value
+          );
+          var datasetIndName = trimws(
+            document.getElementById(parties[i] + "_ind_name").value
+          );
+          var datasetIndPosition = trimws(
+            document.getElementById(parties[i] + "_ind_position").value
+          );
+          var datasetIndEmail = trimws(
+            document.getElementById(parties[i] + "_ind_email").value
+          );
+          if (datasetIndTitle.length > 0 || datasetIndName.length > 0 ||
+            datasetIndPosition.length > 0 || datasetIndEmail.length > 0) {
+                var relatedInfo = xml.createElement("relatedInfo");
+                relatedInfo.setAttribute("type", "party");
+                traverse.appendChild(relatedInfo);
+                traverse = relatedInfo;
+                var title_ = xml.createElement("title");
+                title_.textContent = datasetIndTitle;
+                traverse.appendChild(title_);
+                var notes_ = xml.createElement("notes");
+                notes_.textContent =
+                  [datasetIndName, datasetIndPosition].join(", ");
+                traverse.appendChild(notes_);
+                var identifier_ = xml.createElement("identifier");
+                identifier_.setAttribute("type", "local");
+                identifier_.textContent = datasetIndEmail;
+                traverse.appendChild(identifier_);
+                traverse = traverse.parentNode;
+              }
+        }
+      }
 
-//TODO will need to fix up the parties, so don't worry about doing
-// this just yet. Come back after it's been fixed in the form and import
-// Also, ignore parties that have no fields filled in.
-
-
-      /* Serialize the XML to a string for the file download. */
+      /* Finally, serialize the XML to a string for the download. */
       const serializer = new XMLSerializer();
       xmlString = serializer.serializeToString(xml);
 
-//TODO do some pretty formatting of the XML string
+      /* Pretty-print the XML so that everything is nicely tabbed
+       * and newline'd.
+       */
+      var pretty = "";
+      var tagStack = [ ];
+      var tags = xmlString.split(/(?<=>)\s*(?=<)/);
+      for (i = 0; i < tags.length; i++) {
+        var tagType = tags[i].match(/\w+/)[0];
+        var selfClosing = (tags[i].search("<" + tagType) >= 0) &&
+          ((tags[i].search("</" + tagType + ">") >= 0) ||
+          (tags[i].slice(-2) == "/>"));
+        var closing = (tags[i].search("</" + tagType + ">") >= 0);
 
+        if (!selfClosing) {
+          if (!(tagStack.length > 0) || (tagStack.slice(-1)[0] != tagType) ||
+            !closing) {
+              tagStack.push(tagType);
+          }
+        } else {
+          tagStack.push(tagType);
+        }
 
+        /* Indent */
+        for (j = 0; j < tagStack.length - 1; j++) { pretty += "\t"; }
+        pretty += tags[i] + "\n";
+
+        if (closing || selfClosing) {
+          tagStack.pop();
+        }
+      }
 
       var downloadElement = document.createElement("a");
       downloadElement.setAttribute(
         "href",
-        "data:text/plain;charset=utf-8," + encodeURIComponent(xmlString)
+        "data:text/plain;charset=utf-8," + encodeURIComponent(pretty)
       );
       downloadElement.setAttribute("download", filename);
       downloadElement.click();
