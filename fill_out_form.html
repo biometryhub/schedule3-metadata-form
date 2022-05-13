@@ -4,7 +4,7 @@
   exporting to the RIF-CS compliant XML data form.
 
   Code author: Russell A. Edson, Biometry Hub
-  Date last modified: 31/01/2022
+  Date last modified: 09/05/2022
 -->
 <html>
   <head>
@@ -96,7 +96,7 @@
         <!-- Research organisation -->
         <div>
           <label for="dataset_organisation">
-            (Primary) Research organisation:
+            (Primary) Research organisation / Project Partner:
           </label>
 
           <input type="text" id="dataset_organisation">
@@ -664,8 +664,9 @@
 
       /* Get the listed parties (including the primary Research
        * Organisation and SAGI Node, which we handle specifically).
-       * Here we assume that the priamry research organisation is the
-       * first listed party that explicitly has 'Research Organisation'
+       * Here we assume that the primary research organisation is the
+       * first listed party that explicitly has 'Project Partner'
+       * (or 'Research Organisation' for previous version compatibility)
        * as its title, and the SAGI node is the first party that has
        * 'SAGI Node' in its title, both case-sensitive. The other
        * parties are toggled as organisations or individuals depending
@@ -675,15 +676,17 @@
       const partyElements =
         traverse.querySelectorAll("relatedInfo[type='party']");
 
-      /* Research Organisation */
+      /* Research Organisation / Project Partner */
       var i = 0;
       while (i < partyElements.length &&
         partyElements[i].getElementsByTagName("title")[0].textContent !=
-        "Research Organisation") {
+        "Research Organisation" &&
+        partyElements[i].getElementsByTagName("title")[0].textContent !=
+        "Project Partner") {
           i++;
       }
       if (i == partyElements.length) {
-        console.error("No 'Research Organisation' party found.");
+        console.error("No 'Research Organisation/Project Partner' found.");
       } else {
         traverse = partyElements[i];
         const organisation =
@@ -1014,10 +1017,10 @@
       traverse = traverse.parentNode;
 
       /* By convention, the second relatedInfo tag has type="party"
-       * with a title tag containing "Research Organisation", a notes
+       * with a title tag containing "Project Partner", a notes
        * tag containing the research organisation, and an identifier
        * tag with type="local" that also contains the research
-       * organisation text (for this primary organisation).
+       * organisation text (for this primary project partner).
        */
       const datasetOrganisation =
         trimws(document.getElementById("dataset_organisation").value);
@@ -1026,7 +1029,7 @@
       traverse.appendChild(relatedInfo);
       traverse = relatedInfo;
       var title_ = xml.createElement("title");
-      title_.textContent = "Research Organisation";
+      title_.textContent = "Project Partner";
       traverse.appendChild(title_);
       var notes_ = xml.createElement("notes");
       notes_.textContent = datasetOrganisation;
