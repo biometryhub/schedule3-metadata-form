@@ -11,6 +11,7 @@ IFS=$'\n'
 OUTPUTS=''
 for FILE in $(find "$1" . -type f -name "*.xml")
 do
+  # Replace 'Variables: ' with 'Treatment factors: ' as appropriate
   VARIABLES=$(grep -oP '(?<=Variables: )[^\n]*(?=</p>)' "$FILE")
   OUTPUTS="$OUTPUTS,$VARIABLES"
 done
